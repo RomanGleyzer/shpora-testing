@@ -1,7 +1,9 @@
-﻿using NUnit.Framework;
+﻿using FluentAssertions;
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 
 namespace HomeExercise.Tasks.ObjectComparison;
+
 public class ObjectComparison
 {
     [Test]
@@ -14,16 +16,14 @@ public class ObjectComparison
         var expectedTsar = new Person("Ivan IV The Terrible", 54, 170, 70,
             new Person("Vasili III of Russia", 28, 170, 60, null));
 
-        // Перепишите код на использование Fluent Assertions.
-        ClassicAssert.AreEqual(actualTsar.Name, expectedTsar.Name);
-        ClassicAssert.AreEqual(actualTsar.Age, expectedTsar.Age);
-        ClassicAssert.AreEqual(actualTsar.Height, expectedTsar.Height);
-        ClassicAssert.AreEqual(actualTsar.Weight, expectedTsar.Weight);
+        /// <summary>
+        /// Такой подход автоматически проверяет все свойства объекта, включая вложенные
+        /// Тест не будет требовать изменений при добавлении новых свойств в класс Person
+        /// При падении теста, FluentAssertions предоставляет подробную информацию о том, какие именно свойства не совпали
+        /// </summary>
 
-        ClassicAssert.AreEqual(expectedTsar.Parent!.Name, actualTsar.Parent!.Name);
-        ClassicAssert.AreEqual(expectedTsar.Parent.Age, actualTsar.Parent.Age);
-        ClassicAssert.AreEqual(expectedTsar.Parent.Height, actualTsar.Parent.Height);
-        ClassicAssert.AreEqual(expectedTsar.Parent.Parent, actualTsar.Parent.Parent);
+        actualTsar.Should()
+            .BeEquivalentTo(expectedTsar, options => options.Excluding(t => t.Id).Excluding(t => t.Parent.Id));
     }
 
     [Test]
@@ -34,7 +34,10 @@ public class ObjectComparison
         var expectedTsar = new Person("Ivan IV The Terrible", 54, 170, 70,
             new Person("Vasili III of Russia", 28, 170, 60, null));
 
-        // Какие недостатки у такого подхода? 
+        // Какие недостатки у такого подхода?
+        // Недостатки подхода:
+        // 1) Требуется ручное обновление метода сравнения при добавлении новых свойств в класс Person,
+        // 2) Тест менее информативен при падении. Он просто укажет, что объекты не равны, не показывая какие именно свойства не совпали.
         ClassicAssert.True(AreEqual(actualTsar, expectedTsar));
     }
 
